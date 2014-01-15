@@ -20,9 +20,9 @@ import com.nachiketjoshi.commands.CommandSpec;
  */
 public class MiniVenmo implements Venmo {
 
-	private Map<String, Command> _commands = new HashMap<String, Command>();
-	private Map<String, User> _users = new HashMap<String, User>();
-	private Set<String> _cards = new HashSet<String>();
+	protected Map<String, Command> _commands = new HashMap<String, Command>();
+	protected Map<String, User> _users = new HashMap<String, User>();
+	protected Set<String> _cards = new HashSet<String>();
 
 	public MiniVenmo() {
 		registerCommand(new UserCommand(this));
@@ -64,42 +64,116 @@ public class MiniVenmo implements Venmo {
 	}
 
 	@Override
-	public void addUser(User user) {
-		String userName = user.getName();
-		if (_users.containsKey(userName)) {
-			System.out.println("ERROR: duplicate user: " + userName);
+	public void addUser(String name) {
+		if (!name.matches("[a-zA-Z0-9_-]{4,15}")) {
+			System.out.println("ERROR: Invalid name: " + name);
 			return;
 		}
-		_users.put(userName, user);
+		if (_users.containsKey(name)) {
+			System.out.println("ERROR: duplicate user: " + name);
+			return;
+		}
+		_users.put(name, new User(name));
 	}
 
-	@Override
 	public User getUser(String name) {
 		return _users.get(name);
 	}
 
 	@Override
-	public void addCreditCard(User user, CreditCard card) {
-		String number = card.getNumber();
-		if (_cards.contains(number)) {
+	public void addCreditCard(String name, String digits) {
+		User user = getUser(name);
+		if (user == null) {
+			System.out.println("ERROR: user not found: " + name);
+			return;
+		}
+		if (user.getCard() != null) {
+			System.out
+					.println("ERROR: this user already has a valid credit card");
+			return;
+		}
+		if (!digits
+				.matches("\\d\\d\\d\\d([-\\s])?\\d\\d\\d\\d([-\\s])?\\d\\d\\d\\d([-\\s])?\\d\\d\\d\\d")) {
+			System.out.println("ERROR: this card is invalid: " + digits);
+			return;
+		}
+
+		digits = digits.replaceAll("[ -]", "");
+		/* LUHN-10: http://www.chriswareham.demon.co.uk/software/Luhn.java */
+		int sum = 0;
+		boolean alternate = false;
+		for (int i = digits.length() - 1; i >= 0; i--) {
+			int n = Integer.parseInt(digits.substring(i, i + 1));
+			if (alternate) {
+				n *= 2;
+				if (n > 9) {
+					n = (n % 10) + 1;
+				}
+			}
+			sum += n;
+			alternate = !alternate;
+		}
+		if (sum % 10 != 0) {
+			System.out.println("ERROR: this card is invalid: " + digits);
+			return;
+		}
+		CreditCard card = new CreditCard(digits);
+		if (_cards.contains(digits)) {
 			System.out
 					.println("ERROR: that card has already been added by another user, reported for fraud!");
 			return;
 		}
 		user.setCreditCard(card);
-		_cards.add(number);
+		_cards.add(digits);
 	}
 
 	@Override
-	public void addPayment(User actor, User target, double amount, String note) {
-		Transaction t = new Transaction(actor, target, amount, note);
+	public void addPayment(String[] parameters) {
+		String actorName = parameters[0];
+		User actor = getUser(actorName);
+		if (actor == null) {
+			System.out.println("ERROR: user not found: " + actorName);
+			return;
+		}
+		String targetName = parameters[1];
+		User target = getUser(targetName);
+		if (target == null) {
+			System.out.println("ERROR: user not found: " + targetName);
+			return;
+		}
+		if (actor == target) {
+			System.out.println("ERROR: users cannot pay themselves");
+			return;
+		}
+		if (actor.getCard() == null) {
+			System.out.println("ERROR: this user does not have a credit card");
+			return;
+		}
+		String dollars = parameters[2];
+		if (dollars.charAt(0) != '$') {
+			System.out.println("ERROR: Invalid amount: " + dollars);
+			return;
+		}
+		double amount = Double.parseDouble(dollars.substring(1));
+		StringBuilder noteBuilder = new StringBuilder();
+		for (int i = 3; i < parameters.length; i++) {
+			noteBuilder.append(parameters[i]);
+			noteBuilder.append(" ");
+		}
+		Transaction t = new Transaction(actor, target, amount, noteBuilder
+				.toString().trim());
 		actor.addTransaction(t);
 		target.incrementBalance(amount);
 		target.addTransaction(t);
 	}
 
 	@Override
-	public void displayFeed(User user) {
+	public void displayFeed(String name) {
+		User user = getUser(name);
+		if (user == null) {
+			System.out.println("ERROR: user not found: " + name);
+			return;
+		}
 		List<Transaction> feed = user.getFeed();
 		for (Transaction t : feed) {
 			StringBuilder output = new StringBuilder("-- ");
@@ -123,7 +197,12 @@ public class MiniVenmo implements Venmo {
 	}
 
 	@Override
-	public void displayBalance(User user) {
+	public void displayBalance(String name) {
+		User user = getUser(name);
+		if (user == null) {
+			System.out.println("ERROR: user not found: " + name);
+			return;
+		}
 		System.out.println("-- $" + String.format("%.2f", user.getBalance()));
 	}
 }

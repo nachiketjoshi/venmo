@@ -4,16 +4,14 @@ public interface Venmo {
 
 	void process(String line);
 
-	void addUser(User user);
+	void addUser(String name);
 
-	User getUser(String name);
+	void addCreditCard(String name, String digits);
 
-	void addCreditCard(User user, CreditCard card);
+	void addPayment(String[] parameters);
 
-	void addPayment(User actor, User target, double amount, String note);
+	void displayFeed(String name);
 
-	void displayFeed(User user);
-
-	void displayBalance(User user);
+	void displayBalance(String name);
 
 }
