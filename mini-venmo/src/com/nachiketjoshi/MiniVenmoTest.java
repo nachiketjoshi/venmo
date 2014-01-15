@@ -23,7 +23,6 @@ public class MiniVenmoTest {
 							: new FileReader(new File(args[1])));
 			for (String input = in.readLine(); input != null; input = in
 					.readLine()) {
-				System.out.println(input);
 				app.process(input);
 			}
 		} catch (Exception e) {

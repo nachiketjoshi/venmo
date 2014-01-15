@@ -70,7 +70,6 @@ public class MiniVenmo implements Venmo {
 			return;
 		}
 		_users.put(user.getName(), user);
-		System.out.println("ADDED U: " + user.getName());
 	}
 
 	@Override
@@ -88,7 +87,6 @@ public class MiniVenmo implements Venmo {
 		}
 		user.setCreditCard(card);
 		_cards.add(number);
-		System.out.println("ADDED C: " + user.getName() + " " + card);
 	}
 
 	@Override
@@ -97,8 +95,6 @@ public class MiniVenmo implements Venmo {
 		actor.addTransaction(t);
 		target.incrementBalance(amount);
 		target.addTransaction(t);
-		System.out.println("ADDED P: " + actor.getName() + " -> "
-				+ target.getName() + " " + amount + " " + note);
 	}
 
 	@Override
