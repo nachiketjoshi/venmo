@@ -20,7 +20,7 @@ public class MiniVenmoTest {
 		try {
 			BufferedReader in = new BufferedReader(
 					args.length == 0 ? new InputStreamReader(System.in)
-							: new FileReader(new File(args[1])));
+							: new FileReader(new File(args[0])));
 			for (String input = in.readLine(); input != null; input = in
 					.readLine()) {
 				app.process(input);

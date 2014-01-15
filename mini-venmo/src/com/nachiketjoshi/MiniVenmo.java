@@ -65,11 +65,12 @@ public class MiniVenmo implements Venmo {
 
 	@Override
 	public void addUser(User user) {
-		if (_users.containsValue(user)) {
-			System.out.println("ERROR: duplicate user: " + user);
+		String userName = user.getName();
+		if (_users.containsKey(userName)) {
+			System.out.println("ERROR: duplicate user: " + userName);
 			return;
 		}
-		_users.put(user.getName(), user);
+		_users.put(userName, user);
 	}
 
 	@Override
