@@ -132,13 +132,13 @@ public class MiniVenmo implements Venmo {
 		String actorName = parameters[0];
 		User actor = getUser(actorName);
 		if (actor == null) {
-			System.out.println("ERROR: user not found: " + actorName);
+			System.out.println("ERROR: actor not found: " + actorName);
 			return;
 		}
 		String targetName = parameters[1];
 		User target = getUser(targetName);
 		if (target == null) {
-			System.out.println("ERROR: user not found: " + targetName);
+			System.out.println("ERROR: target not found: " + targetName);
 			return;
 		}
 		if (actor == target) {

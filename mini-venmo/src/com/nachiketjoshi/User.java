@@ -8,7 +8,7 @@ public class User {
 	private String _name;
 	private CreditCard _card;
 	private double _balance;
-	private final List<Transaction> _feed = new ArrayList<Transaction>();
+	protected final List<Transaction> _feed = new ArrayList<Transaction>();
 
 	public User(String name) {
 		_name = name;
